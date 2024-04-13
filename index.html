@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
+    <title>实验六</title>
+    <style>
+      html,
+      body,
+      #viewDiv {
+        padding: 0;
+        margin: 0;
+        height: 100%;
+        width: 100%;
+        overflow: hidden;
+        
+      }
+       /* 页眉的基本样式 */
+       header {
+            background-color:rgb(225, 225, 240);
+            color: black;
+            padding:0;
+            text-align: center;
+            width: 100%;
+            float: left;
+            margin: auto;
+            justify-content: flex-start;
+            display: flex;
+        }
+        
+        /* 导航链接的样式 */
+        .nav-link {
+            color:black;
+            text-decoration: none;
+            padding: 0 15px;
+            font-size: 20px;
+            font-weight: bold;
+            
+        }
+        
+        
+        /* 导航链接悬停时的样式 */
+        .nav-link:hover {
+            text-decoration: underline;
+        }
+        #queryButton{
+          position: absolute;
+          right: 10px;
+          top: 175px;
+        }
+        #basemapGalleryDiv {
+            position: absolute;
+            top: 250px;
+            left: 0;
+            width: 200px;
+            height: 400px;
+            background: white;
+            overflow-y: auto;
+            /* Enable vertical scrolling */
+            padding: 5px;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2);
+        }
+        #topbar {
+        background: #fff;
+        padding: 10px;
+      }
+
+      .action-button {
+        font-size: 16px;
+        background-color: transparent;
+        border: 1px solid #d3d3d3;
+        color: #6e6e6e;
+        height: 32px;
+        width: 32px;
+        text-align: center;
+        box-shadow: 0 0 1px rgba(0, 0, 0, 0.3);
+      }
+
+      .action-button:hover,
+      .action-button:focus {
+        background: #0079c1;
+        color: #e4e4e4;
+      }
+
+      .active {
+        background: #0079c1;
+        color: #e4e4e4;}
+    </style>
+
+    <link rel="stylesheet" href="https://js.arcgis.com/4.29/esri/themes/light/main.css" />
+    <script src="https://js.arcgis.com/4.29/"></script>
+
+    <script>
+      require(["esri/Map", "esri/views/MapView","esri/layers/FeatureLayer","esri/widgets/ScaleBar","esri/widgets/Legend","esri/widgets/Search","esri/widgets/LayerList","esri/widgets/BasemapGallery","esri/rest/query","esri/layers/TileLayer","esri/geometry/geometryEngine","esri/widgets/DistanceMeasurement2D","esri/widgets/AreaMeasurement2D", "esri/widgets/Sketch", "esri/layers/GraphicsLayer"], (Map, MapView,FeatureLayer,ScaleBar,Legend,Search,LayerList,BasemapGallery,query,TileLaye,geometryEngine,DistanceMeasurement2D,AreaMeasurement2D,Sketch,GraphicsLayer) => {
+        
+        const graphicsLayer = new GraphicsLayer();
+        const map = new Map({
+          basemap: "streets-vector",
+          layers: [graphicsLayer]
+        });
+      
+
+        const view = new MapView({
+          container: "viewDiv",
+          map: map,
+          zoom: 2,
+          center: [140, 24] // longitude, latitude
+        });
+        //比例尺
+        let scaleBar = new ScaleBar({
+          view: view
+          
+          });
+        // Add widget to the bottom left corner of the view
+        view.ui.add(scaleBar, {
+             position: "bottom-left"
+             
+            });
+      //图例
+        let legend = new Legend({
+  view: view
+});
+
+view.ui.add(legend, "bottom-right");
+       
+//要素地图
+        const layer = new FeatureLayer({
+  // URL to the service
+  url: "https://sampleserver6.arcgisonline.com/arcgis/rest/services/USA/MapServer/0"
+});
+const layer1 = new FeatureLayer({
+  // URL to the service
+  url: "https://www.geosceneonline.cn/server/rest/services/Hosted/2000年城市人口比重/FeatureServer"
+});
+        map.layers.add(layer);
+        map.layers.add(layer1);
+
+//         const layer2 = new FeatureLayer({
+//   // URL to the service
+//   url: "https://sampleserver6.arcgisonline.com/arcgis/rest/services/Census/MapServer/3"
+// });
+//         map.layers.add(layer2);
+        
+      const searchWidget = new Search({
+         view: view
+});
+// Adds the search widget below other elements in
+// the top left corner of the view
+view.ui.add(searchWidget, {
+  position: "top-left",
+  index: 2
+});
+
+//图层列表
+let layerList = new LayerList({
+  view: view
+});
+// Adds widget below other elements in the top left corner of the view
+view.ui.add(layerList, {
+  position: "top-left"
+});
+
+// 底图库
+let basemapGallery = new BasemapGallery({
+  view: view,
+  container:"basemapGalleryDiv"
+
+});
+// Add widget to the top right corner of the view
+view.ui.add(basemapGallery, {
+  position: "top-left"
+});
+
+
+let queryUrl = "https://sampleserver6.arcgisonline.com/arcgis/rest/services/USA/MapServer/0";
+document.getElementById("queryButton").addEventListener("click", function() {
+  
+query.executeForCount(queryUrl, {  // autocasts as new Query()
+   where: "pop2000 > 1000000"
+}).then(function(count){
+  alert(count+ "个城市人口数量大于100000人");
+}, function(error){
+     alert(error); // will print error in console if unsupported layers are used
+   });
+  });
+
+//切片图层
+// let layer3 = new TileLayer({
+//     url: "https://tiles.arcgis.com/tiles/nzS0F0zdNLvs7nc8/arcgis/rest/services/China_PopDens_2020/MapServer"
+//   });
+//   map.layers.add(layer3);
+  
+
+
+//测量
+  
+
+  
+  view.ui.add("topbar", "top-right");
+
+        // create the measurement widgets and hide them by default
+        const distanceMeasurement2D = new DistanceMeasurement2D({
+          view,
+          visible: false
+        });
+        const areaMeasurement2D = new AreaMeasurement2D({
+          view,
+          visible: false
+        });
+
+        // event listener for distance measurements
+        document.getElementById("distanceButton").addEventListener("click", function() {
+          setActiveWidget(null);
+          if (!this.classList.contains("active")) {
+            setActiveWidget("distance");
+          } else {
+            setActiveButton(null);
+          }
+        });
+
+        // event listener for area measurements
+        document.getElementById("areaButton").addEventListener("click", function() {
+          setActiveWidget(null);
+          if (!this.classList.contains("active")) {
+            setActiveWidget("area");
+          } else {
+            setActiveButton(null);
+          }
+        });
+
+        function setActiveWidget(type) {
+          switch (type) {
+            case "distance":
+              areaMeasurement2D.visible = false;
+              distanceMeasurement2D.visible = true;
+              distanceMeasurement2D.viewModel.start();
+              setActiveButton(document.getElementById("distanceButton"));
+              break;
+            case "area":
+              distanceMeasurement2D.visible = false;
+              areaMeasurement2D.visible = true;
+              areaMeasurement2D.viewModel.start();
+              setActiveButton(document.getElementById("areaButton"));
+              break;
+            case null:
+              areaMeasurement2D.visible = false;
+              distanceMeasurement2D.visible = false;
+              break;
+          }
+        }
+
+        function setActiveButton(selectedButton) {
+          // focus the view to activate keyboard shortcuts for sketching
+          view.focus();
+          let elements = document.getElementsByClassName("active");
+          for (let i = 0; i < elements.length; i++) {
+            elements[i].classList.remove("active");
+          }
+          if (selectedButton) {
+            selectedButton.classList.add("active");
+          }
+        }
+
+        //sketch
+        view.when(() => {
+        const sketch = new Sketch({
+          layer: graphicsLayer,
+          view: view,
+          // graphic will be selected as soon as it is created
+          creationMode: "update"
+        });
+
+        view.ui.add(sketch, "top-right");
+      });
+
+
+
+});
+
+    </script>
+  </head>
+
+  <body>
+    <header>
+      <!-- 导航链接 -->
+      
+      <a href="index.html" class="nav-link">2000年中国城市人口比重以及美国城市人口数量分布图 </a>
+     
+  </header>
+    <div id="viewDiv"></div>
+    <div id="basemapGalleryDiv"></div>
+    <button id="queryButton">查询美国人口数量大于100000的城市数量</button>  
+    <div id="topbar">
+      <button class="action-button esri-icon-measure-area" id="areaButton" type="button" title="Measure area"></button>
+      <button class="action-button esri-icon-measure-line" id="distanceButton" type="button" title="Measure distance between two or more points"></button>
+    </div>
+  </body>
+</html>
